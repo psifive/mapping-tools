@@ -1,0 +1,15 @@
+{
+  "name": "os-mapping",
+  "version": "1.0.0",
+  "description": "Ordnance Survey coordinate conversion utilities — grid references, easting/northing, WGS84 lat/lon",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["ordnance-survey", "osgb36", "national-grid", "coordinates", "mapping"],
+  "license": "MIT"
+}
