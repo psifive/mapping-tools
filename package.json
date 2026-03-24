@@ -4,11 +4,22 @@
   "description": "Ordnance Survey coordinate conversion utilities — grid references, easting/northing, WGS84 lat/lon",
   "type": "module",
   "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "src/"
+  ],
   "scripts": {
     "test": "node --test test/*.test.js"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/psifive/mapping-tools.git"
   },
   "keywords": ["ordnance-survey", "osgb36", "national-grid", "coordinates", "mapping"],
   "license": "MIT"
