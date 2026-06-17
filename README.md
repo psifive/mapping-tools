@@ -18,8 +18,11 @@ Formulas are taken directly from the appendices of the official OS publication [
 | OSGB36 lat/lon ↔ Easting/Northing | Redfearn series Transverse Mercator | < 0.001 m |
 | OSGB36 ↔ WGS84 | 7-parameter Helmert transform | ±3.5 m (95 %) |
 | **WGS84 lat/lon ↔ Easting/Northing** | **Helmert + Redfearn** | **±3.5 m (95 %)** |
+| WGS84 lat/lon ↔ Easting/Northing | OSTN15 grid + Redfearn *(optional)* | < 0.1 m |
 
-The Redfearn projection matches the OS Guide Appendix C worked example to < 1 mm. The dominant source of error for GPS coordinates is the Helmert datum shift, which is a best-fit approximation for the whole of Great Britain. For sub-metre accuracy, the [OSTN15 shift grid](https://www.ordnancesurvey.co.uk/documents/resources/ostn15-coords-transformation.pdf) would be required (not implemented here).
+The Redfearn projection matches the OS Guide Appendix C worked example to < 1 mm. The dominant source of error for GPS coordinates is the Helmert datum shift, which is a best-fit approximation for the whole of Great Britain.
+
+For **sub-metre accuracy**, load the official [OSTN15 shift grid](https://www.ordnancesurvey.co.uk/documents/resources/ostn15-coords-transformation.pdf) with [`loadOSTN15`](#loadostn15osgbtoetrspath-etrstoosgbpath--void). Once loaded, all datum-shift functions use it automatically (with a transparent Helmert fallback for points outside the grid). See [Sub-metre accuracy with OSTN15](#sub-metre-accuracy-with-ostn15) below.
 
 ---
 
@@ -198,6 +201,39 @@ Both accept an optional ellipsoidal height `h` in metres (default 0). All angles
 // A point given in OSGB36 degrees → WGS84
 osgb36ToWgs84(52.6576, 1.7179)
 // { lat: 52.6581, lon: 1.7151 }  — shifted by ~5" in each axis
+```
+
+---
+
+### Sub-metre accuracy with OSTN15
+
+By default the library uses a 7-parameter Helmert transform for the WGS84 ↔ OSGB36 datum shift, accurate to ±3.5 m. For sub-0.1 m accuracy, load the official Ordnance Survey **OSTN15** NTv2 shift grids. Once loaded, every datum-shift function (`wgs84ToOsgb36`, `osgb36ToWgs84`, and everything built on them — `wgs84ToEN`, `enToWgs84`, `gridRefToWgs84`, `wgs84ToGridRef`) uses the grid automatically, falling back to Helmert for any point outside grid coverage.
+
+The grid files are **not bundled** (~30 MB). Download `OSTN15_NTv2_OSGBtoETRS.gsb` and `OSTN15_NTv2_ETRStoOSGB.gsb` from the [OS OSTN15 page](https://www.ordnancesurvey.co.uk/products/os-net/for-developers) and supply their paths.
+
+#### `loadOSTN15(osgbToEtrsPath, etrsToOsgbPath) → void`
+
+Loads and parses the two OSTN15 NTv2 (`.gsb`) grid files. Call once at startup, before any conversion. Node.js only (reads from the filesystem).
+
+- `osgbToEtrsPath` — path to `OSTN15_NTv2_OSGBtoETRS.gsb`
+- `etrsToOsgbPath` — path to `OSTN15_NTv2_ETRStoOSGB.gsb`
+
+```js
+import { loadOSTN15, wgs84ToEN } from './index.js';
+
+// Helmert (±3.5 m) until the grids are loaded:
+wgs84ToEN(52.658007833, 1.716073973);
+// { easting: 651435.917, northing: 313166.888 }
+
+// Load the OSTN15 grids once:
+loadOSTN15(
+  './data/OSTN15_NTv2_OSGBtoETRS.gsb',
+  './data/OSTN15_NTv2_ETRStoOSGB.gsb',
+);
+
+// Now sub-0.1 m — matches the official OS worked example:
+wgs84ToEN(52.658007833, 1.716073973);
+// { easting: 651409.804, northing: 313177.450 }
 ```
 
 ---
