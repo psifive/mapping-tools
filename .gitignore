@@ -2,3 +2,7 @@ node_modules/
 .env
 *.log
 .claude/
+
+# OSTN15 NTv2 shift grids — large binaries, supplied locally (see loadOSTN15)
+data/
+*.gsb

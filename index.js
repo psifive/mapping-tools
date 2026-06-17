@@ -29,6 +29,8 @@ import { latLonToEN as tmLatLonToEN, enToLatLon as tmEnToLatLon }
   from './src/transverse-mercator.js';
 import { parseGridRef, formatGridRef, prefixToEN, enToPrefix }
   from './src/grid-ref.js';
+import { isOSTN15Loaded, osgb36ToWgs84_ostn15, wgs84ToOsgb36_ostn15, loadOSTN15 }
+  from './src/ostn15.js';
 
 const RAD = Math.PI / 180;
 const DEG = 180 / Math.PI;
@@ -74,6 +76,11 @@ export function enToOsgb36(easting, northing) {
  * @returns {{lat:number, lon:number}}  OSGB36 decimal degrees
  */
 export function wgs84ToOsgb36(latDeg, lonDeg, h = 0) {
+  if (isOSTN15Loaded()) {
+    const r = wgs84ToOsgb36_ostn15(latDeg, lonDeg);
+    if (r) return r;
+  }
+  // Helmert fallback
   const cart = geodeticToCartesian(latDeg * RAD, lonDeg * RAD, h, WGS84_ELLIPSOID);
   const shifted = applyHelmert(cart.X, cart.Y, cart.Z, invertHelmert(OSGB36_TO_WGS84));
   const { phi, lam } = cartesianToGeodetic(shifted.X, shifted.Y, shifted.Z, AIRY_1830);
@@ -90,6 +97,11 @@ export function wgs84ToOsgb36(latDeg, lonDeg, h = 0) {
  * @returns {{lat:number, lon:number}}  WGS84 decimal degrees
  */
 export function osgb36ToWgs84(latDeg, lonDeg, h = 0) {
+  if (isOSTN15Loaded()) {
+    const r = osgb36ToWgs84_ostn15(latDeg, lonDeg);
+    if (r) return r;
+  }
+  // Helmert fallback
   const cart = geodeticToCartesian(latDeg * RAD, lonDeg * RAD, h, AIRY_1830);
   const shifted = applyHelmert(cart.X, cart.Y, cart.Z, OSGB36_TO_WGS84);
   const { phi, lam } = cartesianToGeodetic(shifted.X, shifted.Y, shifted.Z, WGS84_ELLIPSOID);
@@ -180,3 +192,5 @@ export { enToPrefix };
 
 // Re-export constants for users who need them
 export { NATIONAL_GRID, AIRY_1830, WGS84_ELLIPSOID, OSGB36_TO_WGS84 };
+
+export { loadOSTN15 } from './src/ostn15.js';
